@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نبض سبز - اپلیکیشن مراقبت از گیاهان</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom Tailwind CSS configuration for custom colors */
+        :root {
+            --color-stone-500: #8d8a86; /* Custom color for stone-500 (lighter) */
+            --color-stone-510: #7a7672; /* Custom color for stone-510 (slightly darker than new 500) */
+            --color-stone-550: #57534e; /* Custom color for stone-550 (for hover of active nav button) */
+        }
+        .text-stone-500 { color: var(--color-stone-500); }
+        .bg-stone-500 { background-color: var(--color-stone-500); }
+        .hover\:bg-stone-510:hover { background-color: var(--color-stone-510); }
+        .bg-stone-510 { background-color: var(--color-stone-510); }
+        .hover\:bg-stone-550:hover { background-color: var(--color-stone-550); }
+        /* For file input text color */
+        input[type="file"]::file-selector-button {
+            color: var(--color-stone-500);
+        }
+        /* Animations for message box */
+        @keyframes fade-in-down {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) translateX(-50%);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) translateX(-50%);
+            }
+        }
+        .animate-fade-in-down {
+            animation: fade-in-down 0.3s ease-out forwards;
+        }
+        /* Animation for content sections (smooth expand/collapse) */
+        .content-transition {
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            overflow: hidden;
+        }
+        .max-h-0 {
+            max-height: 0;
+            opacity: 0;
+        }
+        .max-h-screen-content { /* A large enough value to accommodate content */
+            max-height: 1000px; /* Use a fixed large value or calculate dynamically if needed */
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-green-50 to-lime-100 p-4">
+    <div id="root"></div>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+    <script type="text/javascript">
+        const { useState, useEffect, useRef } = React;
+        const { createRoot } = ReactDOM;
+
+        // Helper function to concatenate class names dynamically
+        // This helps avoid SyntaxErrors when constructing complex class strings
+        const cx = (...args) => args.filter(Boolean).join(' ');
+
+        // Helper function to render Lucide icons
+        const LucideIcon = ({ name, size, className }) => {
+            useEffect(() => {
+                lucide.createIcons();
+            }, [name, size, className]); // Re-create icons if props change
+            return React.createElement('i', { 'data-lucide': name, style: { width: size, height: size }, className });
+        };
+
+        const App = () => {
+            const [currentActiveSection, setCurrentActiveSection] = useState(null);
+            const [showHomeWelcome, setShowHomeWelcome] = useState(true);
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState('');
+            const [imageData, setImageData] = useState(null);
+            const [plantName, setPlantName] = useState('');
+            const [plantProblem, setPlantProblem] = useState('');
+            const [aiResponse, setAiResponse] = useState('');
+            const [messageBox, setMessageBox] = useState({ visible: false, message: '', type: 'info' });
+            const [schedulePlantName, setSchedulePlantName] = useState('');
+            const [careFrequency, setCareFrequency] = useState('هفتگی');
+            const [dailyTip, setDailyTip] = useState('');
+            const [showDailyTipModal, setShowDailyTipModal] = useState(false);
+            const [dailyTipModalContentClasses, setDailyTipModalContentClasses] = useState('opacity-0 scale-95');
+
+            // State to manage visibility of content sections for animation
+            const [contentSectionVisibility, setContentSectionVisibility] = useState({
+                nickname: false,
+                identify: false,
+                info: false,
+                careSchedule: false,
+                troubleshoot: false,
+            });
+
+            const homeRef = useRef(null);
+            const identifyRef = useRef(null);
+            const infoRef = useRef(null);
+            const nicknameRef = useRef(null);
+            const careScheduleRef = useRef(null);
+            const troubleshootRef = useRef(null);
+            const aiResponseRef = useRef(null);
+
+            const showMessageBox = (message, type = 'info') => {
+                setMessageBox({ visible: true, message, type });
+                if (type !== 'error') {
+                    setTimeout(() => hideMessageBox(), 5000);
+                }
+            };
+
+            const hideMessageBox = () => {
+                setMessageBox({ visible: false, message: '', type: 'info' });
+            };
+
+            const handleImageChange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    if (file.size > 5 * 1024 * 1024) {
+                        showMessageBox('حجم تصویر نباید بیشتر از 5 مگابایت باشد.', 'error');
+                        setImageData(null);
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        const base64Image = reader.result.split(',')[1];
+                        setImageData(base64Image);
+                        handleIdentifyPlant(base64Image);
+                    };
+                    reader.onerror = () => {
+                        showMessageBox('خطا در خواندن فایل تصویر.', 'error');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    setImageData(null);
+                }
+            };
+
+            const callGeminiApi = async (prompt, imageBase64 = null, schema = null) => {
+                setLoading(true);
+                setError('');
+                setAiResponse('');
+                try {
+                    let payload;
+                    if (imageBase64) {
+                        payload = {
+                            contents: [
+                                {
+                                    role: "user",
+                                    parts: [
+                                        { text: prompt },
+                                        { inlineData: { mimeType: "image/jpeg", data: imageBase64 } }
+                                    ]
+                                }
+                            ],
+                        };
+                    } else {
+                        payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                    }
+
+                    if (schema) {
+                        payload.generationConfig = {
+                            responseMimeType: "application/json",
+                            responseSchema: schema
+                        };
+                    }
+
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`خطای API: ${response.status} - ${errorData.error?.message || 'خطای ناشناخته'}`);
+                    }
+
+                    const result = await response.json();
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        if (schema) {
+                            try {
+                                return JSON.parse(text);
+                            } catch (e) {
+                                throw new Error('خطا در تجزیه پاسخ JSON از API.');
+                            }
+                        }
+                        return text;
+                    } else {
+                        throw new Error('پاسخ معتبری از API دریافت نشد.');
+                    }
+                } catch (err) {
+                    console.error("خطا در فراخوانی Gemini API:", err);
+                    setError(err.message || 'خطا در برقراری ارتباط با سرویس.');
+                    return null;
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const handleIdentifyPlant = async (imgData) => {
+                if (!imgData) {
+                    showMessageBox('تصویری برای شناسایی وجود ندارد.', 'warning');
+                    return;
+                }
+                showMessageBox('در حال شناسایی گیاه...', 'info');
+                const prompt = "این تصویر یک گیاه است. نام این گیاه چیست و نیازهای آبیاری آن (چند بار در هفته، چه مقدار آب) چگونه است؟ پاسخ را به صورت خلاصه و در چند نکته کلیدی ارائه دهید.";
+                const response = await callGeminiApi(prompt, imgData);
+                if (response) {
+                    setAiResponse(response);
+                    hideMessageBox();
+                    setTimeout(() => { if (aiResponseRef.current) { aiResponseRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 100);
+                } else {
+                    setAiResponse('');
+                    showMessageBox('شناسایی گیاه با مشکل مواجه شد. لطفا دوباره تلاش کنید.', 'error');
+                }
+            };
+
+            const handleGetPlantInfo = async () => {
+                if (!plantName.trim()) {
+                    showMessageBox('لطفا نام گیاه را وارد کنید.', 'warning');
+                    return;
+                }
+                showMessageBox('در حال دریافت اطلاعات گیاه...', 'info');
+                const prompt = `لطفا اطلاعات کاملی در مورد گیاه '${plantName.trim()}' ارائه دهید، شامل شرایط نگهداری (نور، دما، رطوبت)، آفات رایج و روش‌های کنترل، و شرایط کوددهی. پاسخ را به صورت خلاصه و نکات کلیدی ارائه دهید.`;
+                const response = await callGeminiApi(prompt);
+                if (response) {
+                    setAiResponse(response);
+                    hideMessageBox();
+                    setTimeout(() => { if (aiResponseRef.current) { aiResponseRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 100);
+                } else {
+                    setAiResponse('');
+                    showMessageBox('دریافت اطلاعات گیاه با مشکل مواجه شد. لطفا دوباره تلاش کنید.', 'error');
+                }
+            };
+
+            const handleGeneratePlantNickname = async () => {
+                if (!plantName.trim()) {
+                    showMessageBox('لطفا نام گیاه را وارد کنید تا نام مستعار/شخصیت آن را دریافت کنید.', 'warning');
+                    return;
+                }
+                showMessageBox('در حال تولید نام مستعار/شخصیت گیاه...', 'info');
+                const prompt = `برای گیاه '${plantName.trim()}' یک نام مستعار بامزه یا یک توصیف شخصیت کوتاه و جذاب ایجاد کنید. پاسخ را به صورت خلاصه و خلاقانه ارائه دهید.`;
+                const response = await callGeminiApi(prompt);
+                if (response) {
+                    setAiResponse(response);
+                    hideMessageBox();
+                    setTimeout(() => { if (aiResponseRef.current) { aiResponseRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 100);
+                } else {
+                    setAiResponse('');
+                    showMessageBox('تولید نام مستعار/شخصیت گیاه با مشکل مواجه شد. لطفا دوباره تلاش کنید.', 'error');
+                }
+            };
+
+            const handleSolvePlantProblem = async () => {
+                if (!plantName.trim() || !plantProblem.trim()) {
+                    showMessageBox('لطفا نام گیاه و مشکل آن را وارد کنید.', 'warning');
+                    return;
+                }
+                showMessageBox('در حال جستجوی راه حل...', 'info');
+                const prompt = `گیاه '<span class="math-inline">\{plantName\.trim\(\)\}' با مشکل '</span>{plantProblem.trim()}' مواجه است. لطفا راه حل درمانی مناسب برای این مشکل را به صورت کوتاه و کاربردی در چند نکته ارائه دهید.`;
+                const response = await callGeminiApi(prompt);
+                if (response) {
+                    setAiResponse(response);
+                    hideMessageBox();
+                    setTimeout(() => { if (aiResponseRef.current) { aiResponseRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 100);
+                } else {
+                    setAiResponse('');
+                    showMessageBox('یافتن راه حل با مشکل مواجه شد. لطفا دوباره تلاش کنید.', 'error');
+                }
+            };
+
+            const handleGenerateCareSchedule = async () => {
+                if (!schedulePlantName.trim()) {
+                    showMessageBox('لطفا نام گیاه را وارد کنید.', 'warning');
+                    return;
+                }
+                showMessageBox('در حال تولید برنامه مراقبت...', 'info');
+                const prompt = `برای گیاه '${schedulePlantName.trim()}' یک برنامه مراقبت ${careFrequency} شامل جزئیات آبیاری، کوددهی، نور، دما، رطوبت، و نکات خاص نگهداری ارائه دهید. برنامه را به صورت خلاصه و در قالب نکات عملی بیان کنید.`;
+                const response = await callGeminiApi(prompt);
+                if (response) {
+                    setAiResponse(response);
+                    hideMessageBox();
+                    setTimeout(() => { if (aiResponseRef.current) { aiResponseRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 100);
+                } else {
+                    setAiResponse('');
+                    showMessageBox('تولید برنامه مراقبت با مشکل مواجه شد. لطفا دوباره تلاش کنید.', 'error');
+                }
+            };
+
+            const handleGetDailyTip = async () => {
+                showMessageBox('در حال دریافت نکته روز...', 'info');
+                const prompt = "یک نکته جالب یا یک حقیقت علمی کوتاه و مفید در مورد گیاهان ارائه دهید.";
+                const response = await callGeminiApi(prompt);
+                if (response) {
+                    setDailyTip(response);
+                    setShowDailyTipModal(true);
+                    setTimeout(() => { setDailyTipModalContentClasses('opacity-100 scale-100'); }, 10);
+                    hideMessageBox();
+                } else {
+                    setDailyTip('');
+                    setShowDailyTipModal(false);
+                    showMessageBox('دریافت نکته روز با مشکل مواجه شد. لطفا دوباره تلاش کنید.', 'error');
+                }
+            };
+
+            const closeDailyTipModal = () => {
+                setDailyTipModalContentClasses('opacity-0 scale-95');
+                setTimeout(() => {
+                    setShowDailyTipModal(false);
+                    setDailyTip('');
+                }, 300);
+            };
+
+            const handleNavClick = (viewId) => {
+                setShowHomeWelcome(false); // Always hide home when a nav button is clicked
+
+                if (currentActiveSection === viewId) {
+                    // If clicking the currently open section, close it and show home
+                    setCurrentActiveSection(null);
+                    setShowHomeWelcome(true);
+                } else {
+                    // Open the new section
+                    setCurrentActive
