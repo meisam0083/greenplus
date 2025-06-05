@@ -1,0 +1,3 @@
+[build]
+  publish = "." # این مسیر اصلی فایل های وبسایت شما (مثلاً index.html) است
+  functions = "netlify/functions" # این مسیر پوشه توابع Netlify شما است
