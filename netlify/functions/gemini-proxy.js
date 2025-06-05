@@ -2,7 +2,6 @@
 // این فایل باید در پوشه netlify/functions قرار گیرد
 
 // پکیج‌های لازم برای Google Generative AI را وارد کنید
-// مطمئن شوید که این پکیج نصب شده است: npm install @google/generative-ai
 const { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } = require('@google/generative-ai');
 
 exports.handler = async function(event, context) {
@@ -18,7 +17,6 @@ exports.handler = async function(event, context) {
     const { prompt, imageBase64 } = JSON.parse(event.body);
 
     // کلید API جمینی خود را از متغیرهای محیطی Netlify دریافت کنید
-    // حتماً متغیری به نام GEMINI_API_KEY را در تنظیمات Netlify خود تنظیم کنید.
     const apiKey = process.env.GEMINI_API_KEY; 
 
     if (!apiKey) {
@@ -37,53 +35,40 @@ exports.handler = async function(event, context) {
         let contents = [{ role: 'user', parts: [{ text: prompt }] }];
 
         if (imageBase64) {
-            // برای درک تصویر از gemini-1.0-pro-vision استفاده می‌کنیم (تغییر یافته از gemini-pro-vision)
-            model = genAI.getGenerativeModel({ model: 'gemini-1.0-pro-vision' });
+            // تغییر مدل به gemini-1.5-flash برای درک تصویر
+            model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
             contents[0].parts.push({
                 inlineData: {
-                    mimeType: 'image/png', // یا 'image/jpeg' بسته به نوع تصویر شما
+                    mimeType: 'image/png', // یا 'image/jpeg'
                     data: imageBase64,
                 },
             });
         } else {
-            // برای تولید فقط متن از gemini-1.0-pro استفاده می‌کنیم (تغییر یافته از gemini-pro)
-            model = genAI.getGenerativeModel({ model: 'gemini-1.0-pro' });
+            // تغییر مدل به gemini-1.5-flash برای تولید متن
+            model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
         }
 
-        // تنظیمات ایمنی را برای گسترده‌تر کردن محدوده پاسخ‌ها تعریف کنید
+        // تنظیمات ایمنی
         const safetySettings = [
-            {
-                category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-                threshold: HarmBlockThreshold.BLOCK_NONE,
-            },
-            {
-                category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-                threshold: HarmBlockThreshold.BLOCK_NONE,
-            },
-            {
-                category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-                threshold: HarmBlockThreshold.BLOCK_NONE,
-            },
-            {
-                category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-                threshold: HarmBlockThreshold.BLOCK_NONE,
-            },
+            { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+            { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+            { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+            { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
         ];
 
-        // محتوا را با استفاده از مدل انتخاب شده تولید کنید
+        // تولید محتوا
         const result = await model.generateContent({
             contents: contents,
-            safetySettings: safetySettings, // اعمال تنظیمات ایمنی
+            safetySettings: safetySettings,
         });
 
-        // متن پاسخ را استخراج کنید
         const responseText = result.response.text();
 
         return {
             statusCode: 200,
             headers: {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*', // این برای CORS مهم است
+                'Access-Control-Allow-Origin': '*',
             },
             body: JSON.stringify({ response: responseText }),
         };
