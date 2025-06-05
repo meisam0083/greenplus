@@ -1,14 +1,12 @@
-// your-plant-app/netlify/functions/gemini-proxy.js
-// This file should be inside netlify/functions folder
+// netlify/functions/gemini-proxy.js
+// این فایل باید در پوشه netlify/functions قرار گیرد
 
-// Import necessary modules for Google Generative AI
-// Make sure to install this package: npm install @google/generative-ai
+// پکیج‌های لازم برای Google Generative AI را وارد کنید
+// مطمئن شوید که این پکیج نصب شده است: npm install @google/generative-ai
 const { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } = require('@google/generative-ai');
-// اگر در package.json شما axios تعریف شده است، می توانید آن را نیز import کنید.
-// const axios = require('axios'); // این خط برای Gemini API Client لازم نیست، می توانید آن را حذف کنید.
 
 exports.handler = async function(event, context) {
-    // Check if the request method is POST
+    // فقط درخواست‌های POST را می‌پذیریم
     if (event.httpMethod !== 'POST') {
         return {
             statusCode: 405, // Method Not Allowed
@@ -16,12 +14,11 @@ exports.handler = async function(event, context) {
         };
     }
 
-    // Parse the request body
+    // بدنه درخواست را تجزیه کنید
     const { prompt, imageBase64 } = JSON.parse(event.body);
 
-    // Get your Gemini API key from Netlify Environment Variables
-    // Make sure to set a variable named GEMINI_API_KEY in Netlify settings.
-    // ** این خط حیاتی و درست است. کلید API شما را از Netlify می خواند **
+    // کلید API جمینی خود را از متغیرهای محیطی Netlify دریافت کنید
+    // حتماً متغیری به نام GEMINI_API_KEY را در تنظیمات Netlify خود تنظیم کنید.
     const apiKey = process.env.GEMINI_API_KEY; 
 
     if (!apiKey) {
@@ -32,7 +29,7 @@ exports.handler = async function(event, context) {
         };
     }
 
-    // Initialize the Generative AI client with the API key from environment variables
+    // کلاینت Generative AI را با کلید API از متغیرهای محیطی مقداردهی اولیه کنید
     const genAI = new GoogleGenerativeAI(apiKey); 
 
     try {
@@ -40,20 +37,20 @@ exports.handler = async function(event, context) {
         let contents = [{ role: 'user', parts: [{ text: prompt }] }];
 
         if (imageBase64) {
-            // Use gemini-pro-vision for image understanding
-            model = genAI.getGenerativeModel({ model: 'gemini-pro-vision' });
+            // برای درک تصویر از gemini-1.0-pro-vision استفاده می‌کنیم (تغییر یافته از gemini-pro-vision)
+            model = genAI.getGenerativeModel({ model: 'gemini-1.0-pro-vision' });
             contents[0].parts.push({
                 inlineData: {
-                    mimeType: 'image/png', // Or 'image/jpeg' depending on your image type
+                    mimeType: 'image/png', // یا 'image/jpeg' بسته به نوع تصویر شما
                     data: imageBase64,
                 },
             });
         } else {
-            // Use gemini-pro for text-only generation
-            model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+            // برای تولید فقط متن از gemini-1.0-pro استفاده می‌کنیم (تغییر یافته از gemini-pro)
+            model = genAI.getGenerativeModel({ model: 'gemini-1.0-pro' });
         }
 
-        // Define safety settings to broaden the range of responses
+        // تنظیمات ایمنی را برای گسترده‌تر کردن محدوده پاسخ‌ها تعریف کنید
         const safetySettings = [
             {
                 category: HarmCategory.HARM_CATEGORY_HARASSMENT,
@@ -73,20 +70,20 @@ exports.handler = async function(event, context) {
             },
         ];
 
-        // Generate content using the chosen model
+        // محتوا را با استفاده از مدل انتخاب شده تولید کنید
         const result = await model.generateContent({
             contents: contents,
-            safetySettings: safetySettings, // Apply safety settings
+            safetySettings: safetySettings, // اعمال تنظیمات ایمنی
         });
 
-        // Extract the response text
+        // متن پاسخ را استخراج کنید
         const responseText = result.response.text();
 
         return {
             statusCode: 200,
             headers: {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*', // This is important for CORS
+                'Access-Control-Allow-Origin': '*', // این برای CORS مهم است
             },
             body: JSON.stringify({ response: responseText }),
         };
