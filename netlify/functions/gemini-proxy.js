@@ -35,8 +35,8 @@ exports.handler = async function(event, context) {
         let contents = [{ role: 'user', parts: [{ text: prompt }] }];
 
         if (imageBase64) {
-            // تغییر مدل به gemini-1.5-flash برای درک تصویر
-            model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+            // تغییر مدل به gemini-2.5-flash برای درک تصویر
+            model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
             contents[0].parts.push({
                 inlineData: {
                     mimeType: 'image/png', // یا 'image/jpeg'
@@ -44,8 +44,8 @@ exports.handler = async function(event, context) {
                 },
             });
         } else {
-            // تغییر مدل به gemini-1.5-flash برای تولید متن
-            model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+            // تغییر مدل به gemini-2.5-flash برای تولید متن
+            model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
         }
 
         // تنظیمات ایمنی
