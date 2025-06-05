@@ -3,337 +3,391 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نبض سبز - اپلیکیشن مراقبت از گیاهان</title>
+    <title>نبض سبز - برنامه مراقبت از گیاه</title>
+    
+    <!-- PWA: لینک به manifest.json -->
+    <link rel="manifest" href="./manifest.json">
+    <!-- PWA: تنظیم رنگ نوار وضعیت برای مرورگرهای موبایل -->
+    <meta name="theme-color" content="#16A34A"> 
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- فونت Vazirmatn از Google Fonts - می‌توانید آن را حذف یا در کنار فونت دلخواه خود استفاده کنید -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;
+
+        /* ------------------------------------------------------------- */
+        /* تعریف فونت‌های دلخواه شما با استفاده از @font-face */
+        /* فایل‌های فونت خود را در پوشه "fonts" قرار دهید. */
+        /* برای هر وزن فونت (مثلاً Regular, Bold) یک @font-face جداگانه تعریف کنید. */
+        /* مثال: اگر فایل فونت معمولی شما "MyCustomFont-Regular.woff2" است */
+        /* نام "MyCustomFont" را می‌توانید به نام فونت دلخواه خود تغییر دهید. */
+        /* ------------------------------------------------------------- */
+        @font-face {
+            font-family: 'MyCustomFont';
+            src: url('./fonts/MyCustomFont-Regular.woff2') format('woff2'),
+                 url('./fonts/MyCustomFont-Regular.woff') format('woff');
+            font-weight: 400; /* وزن فونت معمولی */
+            font-style: normal;
+            font-display: swap; /* برای بهبود تجربه بارگذاری فونت */
         }
-        /* Custom Tailwind CSS configuration for custom colors */
+        @font-face {
+            font-family: 'MyCustomFont';
+            src: url('./fonts/MyCustomFont-Bold.woff2') format('woff2'),
+                 url('./fonts/MyCustomFont-Bold.woff') format('woff');
+            font-weight: 700; /* وزن فونت Bold */
+            font-style: normal;
+            font-display: swap;
+        }
+        /* ------------------------------------------------------------- */
+
+        /* تعریف متغیرهای فونت برای بخش‌های مختلف برنامه */
         :root {
-            --color-stone-500: #8d8a86; /* Custom color for stone-500 (lighter) */
-            --color-stone-510: #7a7672; /* Custom color for stone-510 (slightly darker than new 500) */
-            --color-stone-550: #57534e; /* Custom color for stone-550 (for hover of active nav button) */
+            /* می‌توانید هر کدام از اینها را به 'MyCustomFont', 'Vazirmatn', یا هر فونت دیگری که تعریف کردید تغییر دهید. */
+            --font-main-title: 'Vazirmatn', sans-serif;         /* برای عنوان اصلی (h1: نبض سبز) */
+            --font-section-heading: 'Vazirmatn', sans-serif;    /* برای عنوان‌های بخش‌ها (h2, h3: پاسخ نبض سبز, تاریخچه, نکته روز) */
+            --font-welcome-main: 'Vazirmatn', sans-serif;        /* برای "به نبض سبز خوش آمدید!" */
+            --font-welcome-sub: 'Vazirmatn', sans-serif;      /* برای "دستیار هوشمند مراقبت از گیاهان." */
+            --font-body-text: 'Vazirmatn', sans-serif;          /* برای متن‌های عادی (مانند پاسخ‌ها، توضیحات ورودی) */
+            --font-input-button: 'Vazirmatn', sans-serif;       /* برای ورودی‌ها، انتخاب‌ها، دکمه‌ها */
+
+            /* سایر متغیرهای رنگی */
+            --color-stone-500: '#78716c'; /* سنگی 500 - رنگ هاور پس‌زمینه دکمه‌های داخلی مودال (مثل "تولید نام") */
+            --color-stone-400: '#a8a29e'; /* سنگی 400 - پس‌زمینه اصلی دکمه‌های داخلی مودال، و همچنین رنگ متن لیبل‌ها در مودال (مثال: "نام گیاه:") */
+            --color-stone-510: '#234723'; /* Changed to requested color for active circular button */
+            
+            --color-purple-600: '#9333ea'; /* بنفش 600 - پس‌زمینه دکمه نویگیشن "شخصیت" */
+            --color-purple-700: '#7e22ce'; /* بنفش 700 - رنگ هاور پس‌زمینه دکمه نویگیشن "شخصیت" */
+
+            --color-green-500: '#22c55e'; /* سبز 500 - (این متغیر مستقیماً در CSS سفارشی استفاده نشده، اما در Tailwind موجود است) */
+            --color-green-600: '#16a34a'; /* سبز 600 - پس‌زمینه دکمه‌های نویگیشن (به جز "شخصیت")، دکمه "بستن" در مودال‌ها */
+            --color-green-700: '#15803d'; /* سبز 700 - رنگ هاور پس‌زمینه دکمه‌های سبز رنگ (نویگیشن و مودال) */
         }
-        .text-stone-500 { color: var(--color-stone-500); }
-        .bg-stone-500 { background-color: var(--color-stone-500); }
-        .hover\:bg-stone-510:hover { background-color: var(--color-stone-510); }
+
+        /* اعمال فونت‌ها به عناصر مربوطه */
+        body {
+            font-family: var(--font-body-text);
+        }
+
+        #homeSection { /* H1: نبض سبز */
+            font-family: var(--font-main-title);
+        }
+
+        #aiResponseArea h2, #dailyTipModal h3 { /* H2 و H3: عنوان‌های بخش‌ها و مودال اصلی */
+            font-family: var(--font-section-heading);
+        }
+        /* تغییر اندازه فونت عنوان داخل mainModal */
+        #mainModal h3 {
+            font-family: var(--font-section-heading);
+            font-size: 1.25rem; /* text-xl معادل 20px */
+        }
+
+
+        #historySection h3 { /* عنوان تاریخچه - اندازه جدید */
+            font-family: var(--font-section-heading);
+            font-size: 1.125rem; /* text-lg in Tailwind (previously text-xl) */
+        }
+
+        .welcome-main-text {
+            font-family: var(--font-welcome-main);
+        }
+
+        .welcome-sub-text {
+            font-family: var(--font-welcome-sub);
+            font-size: 1.125rem; /* text-lg for mobile */
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .welcome-sub-text {
+                font-size: 1.25rem; /* text-xl for tablet and desktop */
+            }
+        }
+
+        button, input, select, textarea, .history-item { /* دکمه‌ها، ورودی‌ها، آیتم‌های تاریخچه و متن‌های عادی */
+            font-family: var(--font-input-button);
+        }
+
+        /* تغییر رنگ متن لیبل‌ها در مودال به رنگ پس‌زمینه دکمه‌ها (نسکافه‌ای روشن‌تر) */
+        .text-stone-custom { color: var(--color-stone-400); } 
         .bg-stone-510 { background-color: var(--color-stone-510); }
-        .hover\:bg-stone-550:hover { background-color: var(--color-stone-550); }
-        /* For file input text color */
-        input[type="file"]::file-selector-button {
-            color: var(--color-stone-500);
-        }
-        /* Animations for message box */
-        @keyframes fade-in-down {
+        .bg-stone-400 { background-color: var(--color-stone-400); }
+        .hover\:bg-stone-500:hover { background-color: var(--color-stone-500); }
+
+        .bg-purple-custom-600 { background-color: var(--color-purple-600); }
+        .hover\:bg-purple-custom-700:hover { background-color: var(--color-purple-700); }
+
+        /* General Modal Animations */
+        @keyframes fadeInDown {
             from {
                 opacity: 0;
-                transform: translateY(-20px) translateX(-50%);
+                transform: translate(-50%, -20px);
             }
             to {
                 opacity: 1;
-                transform: translateY(0) translateX(-50%);
+                transform: translate(-50%, 0);
             }
         }
         .animate-fade-in-down {
-            animation: fade-in-down 0.3s ease-out forwards;
+            animation: fadeInDown 0.3s ease-out forwards;
         }
-        /* Animation for content sections (smooth expand/collapse) */
-        .content-transition {
-            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
-            overflow: hidden;
+        
+        .modal-content-animate-in {
+            opacity: 1 !important;
+            transform: scale(1) !important;
         }
-        .max-h-0 {
-            max-height: 0;
-            opacity: 0;
+        .modal-content-animate-out {
+            opacity: 0 !important;
+            transform: scale(0.95) !important;
         }
-        .max-h-screen-content { /* A large enough value to accommodate content */
-            max-height: 1000px; /* Use a fixed large value or calculate dynamically if needed */
-            opacity: 1;
+        .modal-background-fade-in {
+            opacity: 1 !important;
         }
+        .modal-background-fade-out {
+            opacity: 0 !important;
+        }
+
+
+        /* استایل برای آیتم‌های تاریخچه */
+        .history-item {
+            background-color: #ffffff; /* bg-white */
+            padding: 1rem; /* p-4 */
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* shadow-sm */
+            margin-bottom: 0.75rem; /* mb-3 */
+            border: 1px solid #e5e7eb; /* border-gray-200 */
+        }
+        .history-item:last-child {
+            margin-bottom: 0;
+        }
+        .history-item-question {
+            font-weight: 600; /* font-semibold */
+            color: #4b5563; /* text-gray-700 */
+            margin-bottom: 0.5rem; /* mb-2 */
+        }
+        .history-item-response {
+            color: #6b7280; /* text-gray-600 */
+            line-height: 1.6;
+        }
+
+        /* سبک‌های دکمه‌های آیکونی دایره‌ای */
+        .icon-nav-button {
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center;
+            width: 5rem; /* w-20 (80px) for mobile */
+            height: 5rem; /* h-20 (80px) for mobile */
+            border-radius: 9999px; /* کاملاً دایره‌ای */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-lg */
+            transition: all 0.3s ease-in-out;
+            transform: scale(1);
+            padding: 0; /* padding را حذف می کنیم تا آیکون تمام فضای دایره را بگیرد */
+            overflow: hidden; /* برای اطمینان از برش دایره ای تصویر */
+            background-color: #D6E0C7; /* رنگ پس‌زمینه درخواست شده */
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .icon-nav-button {
+                width: 6rem; /* md:w-24 (96px) for tablet and desktop */
+                height: 6rem; /* md:h-24 (96px) for tablet and desktop */
+            }
+        }
+        .icon-nav-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            background-color: #C6D4B9; /* کمی تیره‌تر برای هاور */
+        }
+        .icon-nav-button.active {
+            background-color: var(--color-stone-510) !important; /* رنگ فعال */
+            transform: scale(1.05);
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .icon-nav-button img {
+            width: 100%; /* آیکون کل عرض دایره را پر می‌کند */
+            height: 100%; /* آیکون کل ارتفاع دایره را پر می‌کند */
+            object-fit: cover; /* تصویر را برش می‌دهد تا در دایره جا شود و نسبت ابعاد را حفظ کند */
+            border-radius: 9999px; /* تصویر را به صورت دایره‌ای برش می‌دهد */
+            flex-shrink: 0; 
+        }
+        /* کلاس برای متن زیر آیکون */
+        .icon-nav-label {
+            font-size: 0.875rem; /* text-sm معادل 14px */
+            line-height: 1.25rem; /* leading-tight */
+            font-weight: 500; /* font-medium */
+            display: block; 
+            white-space: normal; 
+            color: #374151; /* text-gray-700 */
+            margin-top: 0.25rem; /* فاصله بین دکمه دایره‌ای و متن */
+        }
+        .icon-nav-button.active + .icon-nav-label { /* وقتی دکمه فعال است، متن زیرش سفید شود */
+             color: white; 
+        }
+
+        /* چیدمان گرید برای دکمه‌های نویگیشن */
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 ستون در موبایل و بزرگتر */
+            gap: 1rem; /* فاصله بین دکمه‌ها */
+            justify-items: center; /* تراز کردن دکمه‌ها در مرکز ستون‌ها */
+        }
+
+        .nav-item-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none; 
+            color: inherit; 
+            width: 100%; /* اطمینان از اینکه wrapper عرض خود را در grid بگیرد */
+        }
+        /* بخش‌های محتوا که قرار است به داخل مودال بروند، در اینجا پنهان می مانند.
+           فقط با JS در modalContentArea قرار می گیرند. */
+        .section-content-hidden-source {
+            display: none !important; /* Ensure this is always hidden by default */
+        }
+
+        /* Styles for the new horizontal tab bar */
+        .horizontal-tab-bar {
+            background-color: #D6E0C7;
+            /* border: 1px solid #dcfce7; */ /* Border removed */
+        }
+        .horizontal-tab-bar .tab-button {
+            background-color: transparent;
+            color: #69735A; /* Reverted to 69735A */
+            font-weight: 600; /* font-semibold */
+            padding: 0.5rem 1.5rem; /* py-2 px-6 */
+            border-radius: 9999px; /* rounded-full */
+            transition: all 0.2s ease-in-out;
+            white-space: nowrap; /* Prevent wrapping */
+        }
+        .horizontal-tab-bar .tab-button.active {
+            background-color: #234723; /* Background active changed to 234723 */
+            color: #C5EABF; /* Text color active changed to C5EABF */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* subtle shadow for active tab */
+        }
+        .horizontal-tab-bar .tab-button:hover:not(.active) {
+            background-color: #bbf7d0; /* green-200 for hover on inactive */
+        }
+
     </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-green-50 to-lime-100 p-4">
-    <div id="root"></div>
+<body class="min-h-screen p-4" style="background-color: #E8ECDE;">
 
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <div id="messageBox" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-11/12 md:max-w-lg px-4 py-3 rounded-md shadow-xl text-white text-center" style="display: none;">
+        <p id="messageBoxText" class="font-bold text-base"></p>
+    </div>
 
-    <script type="text/javascript">
-        const { useState, useEffect, useRef } = React;
-        const { createRoot } = ReactDOM;
+    <div class="max-w-4xl mx-auto pt-2 px-4">
+        <h1 id="homeSection" class="text-3xl md:text-4xl font-extrabold text-center text-green-800 mb-4 tracking-tight drop-shadow-md flex items-center justify-center gap-3">
+            <!-- آیکون کنار اسم "نبض سبز" - اندازه: w-10 h-10 (40x40px) -->
+            <img src="./images/plant-icon.png" alt="آیکون گیاه" class="w-10 h-10">
+            نبض سبز
+        </h1>
 
-        // Helper function to concatenate class names dynamically
-        // This helps avoid SyntaxErrors when constructing complex class strings
-        const cx = (...args) => args.filter(Boolean).join(' ');
+        <!-- NEW: Horizontal Tab Bar -->
+        <div id="horizontalTabs" class="flex justify-around items-center horizontal-tab-bar rounded-full py-2 px-1 mb-8 shadow-sm">
+            <button id="dailyTipTab" class="tab-button active">
+                نکته روز
+            </button>
+            <button id="historyMainTab" class="tab-button">
+                تاریخچه
+            </button>
+        </div>
 
-        // Helper function to render Lucide icons
-        const LucideIcon = ({ name, size, className }) => {
-            useEffect(() => {
-                lucide.createIcons();
-            }, [name, size, className]); // Re-create icons if props change
-            return React.createElement('i', { 'data-lucide': name, style: { width: size, height: size }, className });
-        };
+        <!-- نویگیشن بار جدید با دکمه‌های دایره‌ای آیکونی -->
+        <nav class="w-full p-4 rounded-2xl mb-10" style="background-color: #D6E0C7;">
+            <div class="nav-grid">
+                <!-- دکمه شخصیت گیاه -->
+                <div class="nav-item-wrapper">
+                    <button data-section="nickname" data-full-title="نام مستعار/شخصیت گیاه" class="nav-button icon-nav-button">
+                        <img src="./images/sparkles-icon.png" alt="آیکون شخصیت گیاه">
+                    </button>
+                    <span class="icon-nav-label">شخصیت</span>
+                </div>
 
-        const App = () => {
-            const [currentActiveSection, setCurrentActiveSection] = useState(null);
-            const [showHomeWelcome, setShowHomeWelcome] = useState(true);
-            const [loading, setLoading] = useState(false);
-            const [error, setError] = useState('');
-            const [imageData, setImageData] = useState(null);
-            const [plantName, setPlantName] = useState('');
-            const [plantProblem, setPlantProblem] = useState('');
-            const [aiResponse, setAiResponse] = useState('');
-            const [messageBox, setMessageBox] = useState({ visible: false, message: '', type: 'info' });
-            const [schedulePlantName, setSchedulePlantName] = useState('');
-            const [careFrequency, setCareFrequency] = useState('هفتگی');
-            const [dailyTip, setDailyTip] = useState('');
-            const [showDailyTipModal, setShowDailyTipModal] = useState(false);
-            const [dailyTipModalContentClasses, setDailyTipModalContentClasses] = useState('opacity-0 scale-95');
+                <!-- دکمه شناسایی گیاه -->
+                <div class="nav-item-wrapper">
+                    <button data-section="identify" data-full-title="شناسایی گیاه از روی عکس" class="nav-button icon-nav-button">
+                        <img src="./images/camera-icon.png" alt="آیکون شناسایی گیاه">
+                    </button>
+                    <span class="icon-nav-label">شناسایی</span>
+                </div>
 
-            // State to manage visibility of content sections for animation
-            const [contentSectionVisibility, setContentSectionVisibility] = useState({
-                nickname: false,
-                identify: false,
-                info: false,
-                careSchedule: false,
-                troubleshoot: false,
-            });
+                <!-- دکمه اطلاعات گیاهان -->
+                <div class="nav-item-wrapper">
+                    <button data-section="info" data-full-title="اطلاعات گیاهان" class="nav-button icon-nav-button">
+                        <img src="./images/info-icon.png" alt="آیکون اطلاعات گیاهان">
+                    </button>
+                    <span class="icon-nav-label">اطلاعات</span>
+                </div>
+                
+                <!-- دکمه مراقبت از گیاه -->
+                <div class="nav-item-wrapper">
+                    <button data-section="careSchedule" data-full-title="برنامه مراقبت از گیاه" class="nav-button icon-nav-button">
+                        <img src="./images/calendar-icon.png" alt="آیکون مراقبت از گیاه">
+                    </button>
+                    <span class="icon-nav-label">مراقبت</span>
+                </div>
 
-            const homeRef = useRef(null);
-            const identifyRef = useRef(null);
-            const infoRef = useRef(null);
-            const nicknameRef = useRef(null);
-            const careScheduleRef = useRef(null);
-            const troubleshootRef = useRef(null);
-            const aiResponseRef = useRef(null);
+                <!-- دکمه درمان گیاه -->
+                <div class="nav-item-wrapper">
+                    <button data-section="troubleshoot" data-full-title="عیب‌یابی و درمان گیاه" class="nav-button icon-nav-button">
+                        <img src="./images/heart-crack-icon.png" alt="آیکون درمان گیاه">
+                    </button>
+                    <span class="icon-nav-label">درمان</span>
+                </div>
+            </div>
+        </nav>
 
-            const showMessageBox = (message, type = 'info') => {
-                setMessageBox({ visible: true, message, type });
-                if (type !== 'error') {
-                    setTimeout(() => hideMessageBox(), 5000);
-                }
-            };
+        <!-- بخش AI Response و Loading/Error -->
+        <div id="aiResponseArea" class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 mt-8 mb-10" style="display: none;">
+            <h2 class="text-2xl font-bold text-green-700 mb-4 flex items-center justify-center gap-2">
+                <!-- آیکون کنار "پاسخ نبض سبز" - اندازه: w-7 h-7 (28x28px) -->
+                <img src="./images/response-lightbulb-icon.png" alt="آیکون پاسخ" class="w-7 h-7">
+                پاسخ نبض سبز
+            </h2>
+            <div id="aiResponseContent" class="prose prose-lg max-w-none text-gray-800 leading-relaxed"></div>
+        </div>
 
-            const hideMessageBox = () => {
-                setMessageBox({ visible: false, message: '', type: 'info' });
-            };
+        <div id="loadingIndicator" class="text-center text-green-700 text-lg font-semibold mt-4 flex items-center justify-center gap-2" style="display: none;">
+            <svg class="animate-spin h-5 w-5 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            در حال بارگذاری...
+        </div>
+        <div id="errorIndicator" class="text-center text-red-600 text-lg font-semibold mt-4" style="display: none;"></div>
+    </div>
 
-            const handleImageChange = (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    if (file.size > 5 * 1024 * 1024) {
-                        showMessageBox('حجم تصویر نباید بیشتر از 5 مگابایت باشد.', 'error');
-                        setImageData(null);
-                        return;
-                    }
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        const base64Image = reader.result.split(',')[1];
-                        setImageData(base64Image);
-                        handleIdentifyPlant(base64Image);
-                    };
-                    reader.onerror = () => {
-                        showMessageBox('خطا در خواندن فایل تصویر.', 'error');
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    setImageData(null);
-                }
-            };
+    <!-- این div ها باید خارج از mainModal و به عنوان فرزند body باشند، اما برای راحتی در اینجا تعریف میشوند
+         و با جاوااسکریپت مدیریت میشوند. کلاس section-content-hidden-source آنها را پنهان نگه میدارد. -->
+    <div id="nicknameSection" class="section-content-hidden-source">
+        <div class="mb-6">
+            <label for="plantNameNickname" class="block text-lg font-semibold mb-2 text-stone-custom">نام گیاه را وارد کنید:</label>
+            <input type="text" id="plantNameNickname" placeholder="مثال: سانسوریا، پتوس" class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-right placeholder-gray-400 text-gray-700">
+        </div>
+        <button id="generateNicknameButton" class="w-full bg-stone-400 hover:bg-stone-500 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:ring-opacity-75">تولید نام</button>
+    </div>
+    
+    <div id="identifySection" class="section-content-hidden-source">
+        <div class="mb-6">
+            <label for="imageUpload" class="block text-lg font-semibold mb-2 text-stone-custom">تصویر گیاه را آپلود کنید:</label>
+            <input type="file" id="imageUpload" accept="image/*" class="w-full text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer">
+        </div>
+        <div id="imagePreviewContainer" class="mb-6 text-center" style="display: none;">
+            <p class="text-gray-600 mb-2">پیش‌نمایش تصویر:</p>
+            <img id="imagePreview" src="#" alt="Plant Preview" class="max-w-full h-auto rounded-lg shadow-md mx-auto" style="max-height: 300px;">
+        </div>
+        <button id="identifyPlantButton" class="w-full bg-stone-400 hover:bg-stone-500 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:ring-opacity-75">شناسایی گیاه</button>
+    </div>
 
-            const callGeminiApi = async (prompt, imageBase64 = null, schema = null) => {
-                setLoading(true);
-                setError('');
-                setAiResponse('');
-                try {
-                    let payload;
-                    if (imageBase64) {
-                        payload = {
-                            contents: [
-                                {
-                                    role: "user",
-                                    parts: [
-                                        { text: prompt },
-                                        { inlineData: { mimeType: "image/jpeg", data: imageBase64 } }
-                                    ]
-                                }
-                            ],
-                        };
-                    } else {
-                        payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-                    }
-
-                    if (schema) {
-                        payload.generationConfig = {
-                            responseMimeType: "application/json",
-                            responseSchema: schema
-                        };
-                    }
-
-                    const apiKey = "";
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(`خطای API: ${response.status} - ${errorData.error?.message || 'خطای ناشناخته'}`);
-                    }
-
-                    const result = await response.json();
-                    if (result.candidates && result.candidates.length > 0 &&
-                        result.candidates[0].content && result.candidates[0].content.parts &&
-                        result.candidates[0].content.parts.length > 0) {
-                        const text = result.candidates[0].content.parts[0].text;
-                        if (schema) {
-                            try {
-                                return JSON.parse(text);
-                            } catch (e) {
-                                throw new Error('خطا در تجزیه پاسخ JSON از API.');
-                            }
-                        }
-                        return text;
-                    } else {
-                        throw new Error('پاسخ معتبری از API دریافت نشد.');
-                    }
-                } catch (err) {
-                    console.error("خطا در فراخوانی Gemini API:", err);
-                    setError(err.message || 'خطا در برقراری ارتباط با سرویس.');
-                    return null;
-                } finally {
-                    setLoading(false);
-                }
-            };
-
-            const handleIdentifyPlant = async (imgData) => {
-                if (!imgData) {
-                    showMessageBox('تصویری برای شناسایی وجود ندارد.', 'warning');
-                    return;
-                }
-                showMessageBox('در حال شناسایی گیاه...', 'info');
-                const prompt = "این تصویر یک گیاه است. نام این گیاه چیست و نیازهای آبیاری آن (چند بار در هفته، چه مقدار آب) چگونه است؟ پاسخ را به صورت خلاصه و در چند نکته کلیدی ارائه دهید.";
-                const response = await callGeminiApi(prompt, imgData);
-                if (response) {
-                    setAiResponse(response);
-                    hideMessageBox();
-                    setTimeout(() => { if (aiResponseRef.current) { aiResponseRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 100);
-                } else {
-                    setAiResponse('');
-                    showMessageBox('شناسایی گیاه با مشکل مواجه شد. لطفا دوباره تلاش کنید.', 'error');
-                }
-            };
-
-            const handleGetPlantInfo = async () => {
-                if (!plantName.trim()) {
-                    showMessageBox('لطفا نام گیاه را وارد کنید.', 'warning');
-                    return;
-                }
-                showMessageBox('در حال دریافت اطلاعات گیاه...', 'info');
-                const prompt = `لطفا اطلاعات کاملی در مورد گیاه '${plantName.trim()}' ارائه دهید، شامل شرایط نگهداری (نور، دما، رطوبت)، آفات رایج و روش‌های کنترل، و شرایط کوددهی. پاسخ را به صورت خلاصه و نکات کلیدی ارائه دهید.`;
-                const response = await callGeminiApi(prompt);
-                if (response) {
-                    setAiResponse(response);
-                    hideMessageBox();
-                    setTimeout(() => { if (aiResponseRef.current) { aiResponseRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 100);
-                } else {
-                    setAiResponse('');
-                    showMessageBox('دریافت اطلاعات گیاه با مشکل مواجه شد. لطفا دوباره تلاش کنید.', 'error');
-                }
-            };
-
-            const handleGeneratePlantNickname = async () => {
-                if (!plantName.trim()) {
-                    showMessageBox('لطفا نام گیاه را وارد کنید تا نام مستعار/شخصیت آن را دریافت کنید.', 'warning');
-                    return;
-                }
-                showMessageBox('در حال تولید نام مستعار/شخصیت گیاه...', 'info');
-                const prompt = `برای گیاه '${plantName.trim()}' یک نام مستعار بامزه یا یک توصیف شخصیت کوتاه و جذاب ایجاد کنید. پاسخ را به صورت خلاصه و خلاقانه ارائه دهید.`;
-                const response = await callGeminiApi(prompt);
-                if (response) {
-                    setAiResponse(response);
-                    hideMessageBox();
-                    setTimeout(() => { if (aiResponseRef.current) { aiResponseRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 100);
-                } else {
-                    setAiResponse('');
-                    showMessageBox('تولید نام مستعار/شخصیت گیاه با مشکل مواجه شد. لطفا دوباره تلاش کنید.', 'error');
-                }
-            };
-
-            const handleSolvePlantProblem = async () => {
-                if (!plantName.trim() || !plantProblem.trim()) {
-                    showMessageBox('لطفا نام گیاه و مشکل آن را وارد کنید.', 'warning');
-                    return;
-                }
-                showMessageBox('در حال جستجوی راه حل...', 'info');
-                const prompt = `گیاه '<span class="math-inline">\{plantName\.trim\(\)\}' با مشکل '</span>{plantProblem.trim()}' مواجه است. لطفا راه حل درمانی مناسب برای این مشکل را به صورت کوتاه و کاربردی در چند نکته ارائه دهید.`;
-                const response = await callGeminiApi(prompt);
-                if (response) {
-                    setAiResponse(response);
-                    hideMessageBox();
-                    setTimeout(() => { if (aiResponseRef.current) { aiResponseRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 100);
-                } else {
-                    setAiResponse('');
-                    showMessageBox('یافتن راه حل با مشکل مواجه شد. لطفا دوباره تلاش کنید.', 'error');
-                }
-            };
-
-            const handleGenerateCareSchedule = async () => {
-                if (!schedulePlantName.trim()) {
-                    showMessageBox('لطفا نام گیاه را وارد کنید.', 'warning');
-                    return;
-                }
-                showMessageBox('در حال تولید برنامه مراقبت...', 'info');
-                const prompt = `برای گیاه '${schedulePlantName.trim()}' یک برنامه مراقبت ${careFrequency} شامل جزئیات آبیاری، کوددهی، نور، دما، رطوبت، و نکات خاص نگهداری ارائه دهید. برنامه را به صورت خلاصه و در قالب نکات عملی بیان کنید.`;
-                const response = await callGeminiApi(prompt);
-                if (response) {
-                    setAiResponse(response);
-                    hideMessageBox();
-                    setTimeout(() => { if (aiResponseRef.current) { aiResponseRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 100);
-                } else {
-                    setAiResponse('');
-                    showMessageBox('تولید برنامه مراقبت با مشکل مواجه شد. لطفا دوباره تلاش کنید.', 'error');
-                }
-            };
-
-            const handleGetDailyTip = async () => {
-                showMessageBox('در حال دریافت نکته روز...', 'info');
-                const prompt = "یک نکته جالب یا یک حقیقت علمی کوتاه و مفید در مورد گیاهان ارائه دهید.";
-                const response = await callGeminiApi(prompt);
-                if (response) {
-                    setDailyTip(response);
-                    setShowDailyTipModal(true);
-                    setTimeout(() => { setDailyTipModalContentClasses('opacity-100 scale-100'); }, 10);
-                    hideMessageBox();
-                } else {
-                    setDailyTip('');
-                    setShowDailyTipModal(false);
-                    showMessageBox('دریافت نکته روز با مشکل مواجه شد. لطفا دوباره تلاش کنید.', 'error');
-                }
-            };
-
-            const closeDailyTipModal = () => {
-                setDailyTipModalContentClasses('opacity-0 scale-95');
-                setTimeout(() => {
-                    setShowDailyTipModal(false);
-                    setDailyTip('');
-                }, 300);
-            };
-
-            const handleNavClick = (viewId) => {
-                setShowHomeWelcome(false); // Always hide home when a nav button is clicked
-
-                if (currentActiveSection === viewId) {
-                    // If clicking the currently open section, close it and show home
-                    setCurrentActiveSection(null);
-                    setShowHomeWelcome(true);
-                } else {
-                    // Open the new section
-                    setCurrentActive
+    <div id="infoSection" class="section-content-hidden-source">
+        <div class="mb-6">
+            <label for="plantNameInfo" class="block text-lg font-semibold mb-2 text-stone-custom">نام گیاه را وارد کنید:</label>
+            <input type="text" id="plantNameInfo" placeholder="مثال: زاموفیلیا، فیکوس" class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-right placeholder-gray-400 text-gray-700">
+        </div>
+        <button id="getPlantInfoButton" class="w-full bg-stone-400 hover:bg-stone-500 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:ring-opacity-75">دریافت اطلاعات</button>
+    </div>
+    
+    <div id="careScheduleSection" class="section-content-hidden-source">
+        <div class="mb-6">
+            <label for="schedulePlantName" class="block text-lg font-semibold mb-2 text-stone-c
