@@ -1,11 +1,9 @@
+# netlify.toml
+
 [build]
-  functions = "functions"
+  publish = "." # مسیر انتشار فایل‌های وبسایت شما (جایی که index.html قرار دارد)
+  functions = "netlify/functions" # مهم: مسیر صحیح پوشه توابع شما
 
 [dev]
-  functions = "functions"
+  functions = "netlify/functions" # مهم: مسیر صحیح برای توسعه لوکال
   port = 8888
-
-[[redirects]]
-  from = "/.netlify/functions/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
