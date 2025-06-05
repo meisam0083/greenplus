@@ -62,7 +62,7 @@ exports.handler = async function(event, context) {
     }
 
     // ارسال درخواست به API Gemini
-    const response = await axios.post(`${apiUrl}?key=${GEMINI_API_KEY}`, requestData);
+    const response = await axios.post(`<span class="math-inline">\{apiUrl\}?key\=</span>{apiKey}`, requestData);
     
     // استخراج پاسخ متنی
     const textResponse = response.data.candidates[0].content.parts[0].text;
