@@ -1,0 +1,17 @@
+{
+  "name": "نبض سبز",
+  "short_name": "نبض سبز",
+  "description": "برنامه مراقبت از گیاه",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#E8ECDE",
+  "theme_color": "#16A34A",
+  "icons": [
+    {
+      "src": "./images/plant-icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
+
