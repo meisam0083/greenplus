@@ -1,0 +1,16 @@
+{
+  "name": "nabz-sabz",
+  "version": "1.0.0",
+  "description": "برنامه مراقبت از گیاه",
+  "main": "index.js",
+  "scripts": {
+    "start": "netlify dev"
+  },
+  "dependencies": {
+    "axios": "^1.6.2"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.10.1"
+  }
+}
+
