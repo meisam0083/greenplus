@@ -2,7 +2,7 @@
 const axios = require('axios');
 
 // کلید API Gemini خود را اینجا قرار دهید
-const GEMINI_API_KEY = "AIzaSyDmWcREqVI00WiLObme37mMEoA_qcpf5gs";
+const GEMINI_API_KEY = "process.env.GEMINI_API_KEY;"
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
 const GEMINI_VISION_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent";
 
