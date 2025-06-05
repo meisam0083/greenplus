@@ -1,3 +1,11 @@
 [build]
-  publish = "." # این مسیر اصلی فایل های وبسایت شما (مثلاً index.html) است
-  functions = "netlify/functions" # این مسیر پوشه توابع Netlify شما است
+  functions = "functions"
+
+[dev]
+  functions = "functions"
+  port = 8888
+
+[[redirects]]
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
