@@ -390,4 +390,587 @@
     
     <div id="careScheduleSection" class="section-content-hidden-source">
         <div class="mb-6">
-            <label for="schedulePlantName" class="block text-lg font-semibold mb-2 text-stone-c
+            <label for="schedulePlantName" class="block text-lg font-semibold mb-2 text-stone-custom">نام گیاه را وارد کنید:</label>
+            <input type="text" id="schedulePlantName" placeholder="مثال: ارکیده، کاکتوس" class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-right placeholder-gray-400 text-gray-700">
+        </div>
+        <div class="mb-6">
+            <label for="careFrequency" class="block text-lg font-semibold mb-2 text-stone-custom">دوره مراقبت را انتخاب کنید:</label>
+            <select id="careFrequency" class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-right text-gray-700">
+                <option value="روزانه">روزانه</option>
+                <option value="هفتگی" selected>هفتگی</option>
+                <option value="دو هفته یکبار">دو هفته یکبار</option>
+                <option value="ماهانه">ماهانه</option>
+                <option value="فصلی">فصلی</option>
+            </select>
+        </div>
+        <button id="generateCareScheduleButton" class="w-full bg-stone-400 hover:bg-stone-500 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:ring-opacity-75">تولید برنامه مراقبت</button>
+    </div>
+
+    <div id="troubleshootSection" class="section-content-hidden-source">
+        <div class="mb-6">
+            <label for="plantNameTroubleshoot" class="block text-lg font-semibold mb-2 text-stone-custom">نام گیاه را وارد کنید:</label>
+            <input type="text" id="plantNameTroubleshoot" placeholder="مثال: حسن یوسف" class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-right placeholder-gray-400 text-gray-700">
+        </div>
+        <div class="mb-6">
+            <label for="plantProblem" class="block text-lg font-semibold mb-2 text-stone-custom">مشکل گیاه را توضیح دهید:</label>
+            <textarea id="plantProblem" placeholder="مثال: برگ‌های زرد، پژمردگی، لکه‌های قهوه‌ای" rows="3" class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-right placeholder-gray-400 text-gray-700 resize-y"></textarea>
+        </div>
+        <button id="solvePlantProblemButton" class="w-full bg-stone-400 hover:bg-stone-500 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:ring-opacity-75">یافتن راه حل</button>
+    </div>
+
+    <div id="historySection" class="section-content-hidden-source">
+        <h3 class="text-lg font-bold text-green-700 mb-4">تاریخچه درخواست‌ها</h3>
+        <div id="historyList" class="flex flex-col gap-3">
+            <p class="text-gray-600 text-center" id="emptyHistoryMessage">
+                هنوز درخواستی ثبت نشده است.
+            </p>
+        </div>
+        <button id="clearHistoryButton" class="mt-6 w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75" style="display:none;">
+            پاک کردن تاریخچه
+        </button>
+    </div>
+
+    <!-- Main Modal Structure for Section Inputs -->
+    <div id="mainModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 transition-opacity duration-300" style="display: none; opacity: 0;">
+        <div id="mainModalContent" class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full text-center transition-all duration-300 ease-out transform opacity-0 scale-95">
+            <h3 id="modalTitle" class="text-xl font-extrabold text-green-700 mb-6 flex items-center justify-center gap-2">
+                <!-- Dynamic Title Here -->
+            </h3>
+            <div id="modalContentArea" class="text-right">
+                <!-- Section content will be dynamically loaded here -->
+            </div>
+            <button id="closeMainModalButton" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 mt-6">
+                بستن
+            </button>
+        </div>
+    </div>
+
+    <!-- Daily Tip Modal (remains separate) -->
+    <div id="dailyTipModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 transition-opacity duration-300" style="display: none; opacity: 0;">
+        <div id="dailyTipModalContent" class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full text-center transition-all duration-300 ease-out transform opacity-0 scale-95">
+            <h3 class="text-3xl font-extrabold text-green-700 mb-4 flex items-center justify-center gap-2">
+                <!-- آیکون داخل مودال "نکته روز گیاهی" - اندازه: w-8 h-8 (32x32px) -->
+                <img src="./images/modal-lightbulb-icon.png" alt="آیکون نکته" class="w-8 h-8">
+                نکته روز گیاهی
+            </h3>
+            <p id="dailyTipText" class="text-lg text-gray-800 leading-relaxed mb-6"></p>
+            <button id="closeDailyTipModalButton" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75">
+                بستن
+            </button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // State variables
+            let currentActiveSection = null; // For circular nav modals
+            let currentActiveTab = 'dailyTip'; // For horizontal tabs: 'dailyTip' or 'history'
+            let loading = false;
+            let imageDataBase64 = null; 
+            let messageBoxTimeout;
+            let history = JSON.parse(localStorage.getItem('plantCareHistory')) || [];
+
+            // DOM Elements
+            const messageBox = document.getElementById('messageBox');
+            const messageBoxText = document.getElementById('messageBoxText');
+            
+            const homeSection = document.getElementById('homeSection');
+            const navButtons = document.querySelectorAll('.nav-button'); // Circular buttons
+            const contentSections = { 
+                nickname: document.getElementById('nicknameSection'),
+                identify: document.getElementById('identifySection'),
+                info: document.getElementById('infoSection'),
+                careSchedule: document.getElementById('careScheduleSection'),
+                troubleshoot: document.getElementById('troubleshootSection'),
+                history: document.getElementById('historySection') 
+            };
+
+            // Main Modal elements (for circular buttons)
+            const mainModal = document.getElementById('mainModal');
+            const mainModalContent = document.getElementById('mainModalContent');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalContentArea = document.getElementById('modalContentArea');
+            const closeMainModalButton = document.getElementById('closeMainModalButton');
+
+            // Daily Tip Modal elements
+            const dailyTipModal = document.getElementById('dailyTipModal');
+            const dailyTipModalContent = document.getElementById('dailyTipModalContent');
+            const dailyTipText = document.getElementById('dailyTipText');
+            const closeDailyTipModalButton = document.getElementById('closeDailyTipModalButton');
+
+            // Horizontal Tab Elements
+            const dailyTipTab = document.getElementById('dailyTipTab');
+            const historyMainTab = document.getElementById('historyMainTab');
+            const horizontalTabButtons = document.querySelectorAll('#horizontalTabs .tab-button');
+
+
+            // Form specific elements (inside modals)
+            const plantNameNicknameInput = document.getElementById('plantNameNickname');
+            const generateNicknameButton = document.getElementById('generateNicknameButton');
+            const imageUploadInput = document.getElementById('imageUpload');
+            const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+            const imagePreview = document.getElementById('imagePreview');
+            const identifyPlantButton = document.getElementById('identifyPlantButton');
+            const plantNameInfoInput = document.getElementById('plantNameInfo');
+            const getPlantInfoButton = document.getElementById('getPlantInfoButton'); 
+            const schedulePlantNameInput = document.getElementById('schedulePlantName');
+            const careFrequencySelect = document.getElementById('careFrequency');
+            const generateCareScheduleButton = document.getElementById('generateCareScheduleButton');
+            const plantNameTroubleshootInput = document.getElementById('plantNameTroubleshoot');
+            const plantProblemTextarea = document.getElementById('plantProblem');
+            const solvePlantProblemButton = document.getElementById('solvePlantProblemButton');
+
+            const aiResponseArea = document.getElementById('aiResponseArea');
+            const aiResponseContent = document.getElementById('aiResponseContent');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const errorIndicator = document.getElementById('errorIndicator');
+            
+            const historyList = document.getElementById('historyList'); 
+            const emptyHistoryMessage = document.getElementById('emptyHistoryMessage'); 
+            const clearHistoryButton = document.getElementById('clearHistoryButton'); 
+
+            // --- توابع تاریخچه ---
+            function saveHistory() {
+                localStorage.setItem('plantCareHistory', JSON.stringify(history));
+                renderHistory();
+            }
+
+            function addHistoryItem(question, response, section) {
+                const timestamp = new Date().toLocaleString('fa-IR', { 
+                    year: 'numeric', month: '2-digit', day: '2-digit', 
+                    hour: '2-digit', minute: '2-digit' 
+                });
+                history.unshift({ question, response, section, timestamp }); 
+                if (history.length > 10) {
+                    history = history.slice(0, 10);
+                }
+                saveHistory();
+            }
+
+            function renderHistory() {
+                historyList.innerHTML = ''; 
+                if (history.length === 0) {
+                    emptyHistoryMessage.style.display = 'block';
+                    clearHistoryButton.style.display = 'none';
+                } else {
+                    emptyHistoryMessage.style.display = 'none';
+                    clearHistoryButton.style.display = 'block';
+                    history.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'history-item';
+                        div.innerHTML = `
+                            <p class="history-item-question"><strong>${item.section}:</strong> ${item.question}</p>
+                            <p class="history-item-response"><strong>پاسخ:</strong> ${item.response}</p>
+                            <p class="text-xs text-gray-500 mt-2 text-left">${item.timestamp}</p>
+                        `;
+                        historyList.appendChild(div);
+                    });
+                }
+            }
+
+            function clearAllHistory() {
+                history = [];
+                saveHistory();
+                showMessageBox('تاریخچه پاک شد.', 'info');
+            }
+
+            // --- توابع کمکی ---
+            function showMessageBox(message, type = 'info') {
+                clearTimeout(messageBoxTimeout);
+                messageBoxText.textContent = message;
+                messageBox.classList.remove('bg-red-600', 'bg-yellow-600', 'bg-blue-600', 'animate-fade-in-down');
+                
+                if (type === 'error') messageBox.classList.add('bg-red-600');
+                else if (type === 'warning') messageBox.classList.add('bg-yellow-600');
+                else messageBox.classList.add('bg-blue-600');
+                
+                messageBox.style.display = 'block';
+                void messageBox.offsetWidth; 
+                messageBox.classList.add('animate-fade-in-down');
+
+                if (type !== 'error') {
+                   messageBoxTimeout = setTimeout(hideMessageBox, 5000);
+                }
+            }
+
+            function hideMessageBox() {
+                messageBox.style.display = 'none';
+                messageBox.classList.remove('animate-fade-in-down');
+            }
+
+            function setLoadingState(isLoading) {
+                loading = isLoading;
+                loadingIndicator.style.display = isLoading ? 'flex' : 'none';
+                
+                const allButtons = document.querySelectorAll('#mainModalContent button, .nav-button, #horizontalTabs .tab-button');
+                allButtons.forEach(btn => btn.disabled = isLoading);
+            }
+
+            function setErrorState(errorMessage) {
+                if (errorMessage) {
+                    errorIndicator.textContent = `خطا: ${errorMessage}`;
+                    errorIndicator.style.display = 'block';
+                } else {
+                    errorIndicator.style.display = 'none';
+                }
+            }
+            
+            function clearInputsAndResponse() {
+                plantNameNicknameInput.value = '';
+                imageUploadInput.value = ''; 
+                imagePreview.src = '#';
+                imagePreviewContainer.style.display = 'none';
+                imageDataBase64 = null;
+                plantNameInfoInput.value = '';
+                schedulePlantNameInput.value = '';
+                careFrequencySelect.value = 'هفتگی';
+                plantNameTroubleshootInput.value = '';
+                plantProblemTextarea.value = '';
+                aiResponseContent.innerHTML = '';
+                aiResponseArea.style.display = 'none';
+                setErrorState(''); 
+            }
+
+            // --- Modal Management ---
+            function showModal(modalElement, contentElement, titleElement, sectionId, fullTitle) {
+                clearInputsAndResponse();
+                aiResponseArea.style.display = 'none'; 
+
+                if (titleElement) { 
+                    titleElement.innerHTML = `<img src="./images/response-lightbulb-icon.png" alt="آیکون پاسخ" class="w-7 h-7"> ${fullTitle}`;
+                }
+
+                const currentContentInModal = modalContentArea.firstElementChild;
+                if (currentContentInModal) {
+                    currentContentInModal.style.display = 'none'; 
+                    currentContentInModal.classList.add('section-content-hidden-source'); 
+                    if (currentContentInModal.parentNode === modalContentArea) { 
+                       document.body.appendChild(currentContentInModal); 
+                    }
+                }
+                modalContentArea.innerHTML = ''; 
+
+                const sectionContentToShow = contentSections[sectionId];
+                if (sectionContentToShow) {
+                    if(sectionContentToShow.parentNode !== modalContentArea) { 
+                       modalContentArea.appendChild(sectionContentToShow);
+                    }
+                    sectionContentToShow.classList.remove('section-content-hidden-source'); 
+                    sectionContentToShow.style.display = 'block'; 
+
+                    modalElement.style.display = 'flex'; 
+                    setTimeout(() => {
+                        modalElement.classList.add('modal-background-fade-in');
+                        contentElement.classList.remove('modal-content-animate-out');
+                        contentElement.classList.add('modal-content-animate-in');
+                    }, 10);
+                } else if (modalElement === dailyTipModal) { 
+                    modalElement.style.display = 'flex';
+                    setTimeout(() => {
+                        modalElement.classList.add('modal-background-fade-in');
+                        contentElement.classList.remove('modal-content-animate-out');
+                        contentElement.classList.add('modal-content-animate-in');
+                    }, 10);
+                } else {
+                    console.error(`DEV_LOG: Content for section '${sectionId}' (Title: '${fullTitle}') not found in contentSections object.`);
+                    showMessageBox(`محتوایی برای بخش '${fullTitle}' یافت نشد. لطفاً با پشتیبانی تماس بگیرید.`, 'error');
+                }
+            }
+
+            function hideModal(modalElement, contentElement) { 
+                contentElement.classList.remove('modal-content-animate-in');
+                contentElement.classList.add('modal-content-animate-out');
+                modalElement.classList.remove('modal-background-fade-in');
+                modalElement.classList.add('modal-background-fade-out');
+
+                setTimeout(() => {
+                    modalElement.style.display = 'none';
+                    modalElement.classList.remove('modal-background-fade-out');
+
+                    const currentDisplayedSectionInModal = modalContentArea.firstElementChild;
+                    if (currentDisplayedSectionInModal) {
+                        currentDisplayedSectionInModal.style.display = 'none'; 
+                        currentDisplayedSectionInModal.classList.add('section-content-hidden-source'); 
+                        if (currentDisplayedSectionInModal.parentNode === modalContentArea) { 
+                           document.body.appendChild(currentDisplayedSectionInModal); 
+                        }
+                    }
+                    
+                    modalContentArea.innerHTML = ''; 
+                    currentActiveSection = null; 
+
+                    navButtons.forEach(btn => { 
+                        btn.closest('.nav-item-wrapper').querySelector('.icon-nav-button').classList.remove('active');
+                    });
+                }, 300); 
+            }
+
+            // --- Main Logic for Circular Nav Toggling ---
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const sectionId = button.dataset.section;
+                    const fullTitle = button.dataset.fullTitle;
+
+                    if (currentActiveSection === sectionId && mainModal.style.display !== 'none') {
+                        hideModal(mainModal, mainModalContent); 
+                        return; 
+                    }
+
+                    horizontalTabButtons.forEach(btn => btn.classList.remove('active'));
+                    currentActiveTab = null;
+                    
+                    navButtons.forEach(btn => {
+                        btn.closest('.nav-item-wrapper').querySelector('.icon-nav-button').classList.remove('active');
+                    });
+                    
+                    button.classList.add('active');
+                    currentActiveSection = sectionId; 
+                    showModal(mainModal, mainModalContent, modalTitle, sectionId, fullTitle);
+
+                    if (sectionId === 'history') {
+                        renderHistory(); 
+                    }
+                });
+            });
+
+            closeMainModalButton.addEventListener('click', () => {
+                hideModal(mainModal, mainModalContent); 
+            });
+
+            // --- API Call Function ---
+            async function callGeminiApi(prompt, sectionNameForHistory, imageBase64 = null) {
+                setLoadingState(true);
+                setErrorState('');
+                aiResponseContent.innerHTML = ''; 
+                aiResponseArea.style.display = 'none'; 
+                                
+                try {
+                    const functionUrl = '/.netlify/functions/gemini-proxy'; 
+                    
+                    let payloadData = { prompt: prompt };
+                    if (imageBase64) {
+                        payloadData.imageBase64 = imageBase64;
+                    }
+
+                    const response = await fetch(functionUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payloadData)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.response) { 
+                        const formattedResponse = result.response.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
+                        
+                        if (currentActiveTab === 'dailyTip') { 
+                            dailyTipText.innerHTML = formattedResponse;
+                            if (dailyTipModal.style.display === 'none') { // Show if not already visible
+                                showModal(dailyTipModal, dailyTipModalContent, null, null, null);
+                            }
+                        } else { // For circular nav button responses
+                            aiResponseContent.innerHTML = formattedResponse;
+                            aiResponseArea.style.display = 'block'; // Show the main response area
+                        }
+                        addHistoryItem(prompt, result.response, sectionNameForHistory);
+                    } else {
+                        setErrorState(`خطا از سرور: ${result.error || 'پاسخ نامشخص.'}`);
+                        console.error('Netlify Function response error:', result);
+                    }
+                } catch (error) {
+                    setErrorState(`مشکلی در برقراری ارتباط پیش آمد: ${error.message}`);
+                    console.error('API call error:', error);
+                } finally {
+                    setLoadingState(false);
+                }
+            }
+
+            // --- Event Listeners for API Calls (from modals) ---
+            closeDailyTipModalButton.addEventListener('click', () => {
+                hideModal(dailyTipModal, dailyTipModalContent);
+            });
+
+            generateNicknameButton.addEventListener('click', async () => {
+                if (loading) return;
+                const plantName = plantNameNicknameInput.value.trim();
+                if (!plantName) {
+                    showMessageBox('لطفاً نام گیاه را وارد کنید.', 'warning');
+                    return;
+                }
+                // Hide modal BEFORE API call
+                if (mainModal.style.display !== 'none') {
+                    hideModal(mainModal, mainModalContent);
+                }
+                const prompt = `یک نام مستعار خلاقانه و دوست‌داشتنی برای گیاهی به نام "${plantName}" پیشنهاد بده.`;
+                await callGeminiApi(prompt, `نام مستعار برای ${plantName}`);
+                plantNameNicknameInput.value = '';
+            });
+
+            imageUploadInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        imagePreview.src = e.target.result;
+                        imagePreviewContainer.style.display = 'block';
+                        imageDataBase64 = e.target.result.split(',')[1]; 
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    imagePreview.src = '#';
+                    imagePreviewContainer.style.display = 'none';
+                    imageDataBase64 = null;
+                }
+            });
+
+            identifyPlantButton.addEventListener('click', async () => {
+                if (loading) return;
+                if (!imageDataBase64) {
+                    showMessageBox('لطفاً یک تصویر از گیاه آپلود کنید.', 'warning');
+                    return;
+                }
+                 // Hide modal BEFORE API call
+                if (mainModal.style.display !== 'none') {
+                    hideModal(mainModal, mainModalContent);
+                }
+                const prompt = "این عکس یک گیاه را نشان می دهد. لطفا نام گیاه را شناسایی کرده و اطلاعات مختصری درباره آن (مثلاً خانواده و زیستگاه اصلی) ارائه دهید.";
+                await callGeminiApi(prompt, "شناسایی گیاه از روی عکس", imageDataBase64);
+                imageUploadInput.value = ''; 
+                imagePreview.src = '#';
+                imagePreviewContainer.style.display = 'none';
+                imageDataBase64 = null;
+            });
+
+            getPlantInfoButton.addEventListener('click', async () => {
+                if (loading) return;
+                const plantName = plantNameInfoInput.value.trim();
+                if (!plantName) {
+                    showMessageBox('لطفاً نام گیاه را وارد کنید.', 'warning');
+                    return;
+                }
+                 // Hide modal BEFORE API call
+                if (mainModal.style.display !== 'none') {
+                    hideModal(mainModal, mainModalContent);
+                }
+                const prompt = `اطلاعات جامع و مفیدی در مورد گیاه "${plantName}" ارائه دهید. شامل نحوه مراقبت، نور، آب، خاک و مشکلات رایج.`;
+                await callGeminiApi(prompt, `اطلاعات درباره ${plantName}`);
+                plantNameInfoInput.value = '';
+            });
+
+            generateCareScheduleButton.addEventListener('click', async () => {
+                if (loading) return;
+                const plantName = schedulePlantNameInput.value.trim();
+                const frequency = careFrequencySelect.value;
+                if (!plantName) {
+                    showMessageBox('لطفاً نام گیاه را وارد کنید.', 'warning');
+                    return;
+                }
+                 // Hide modal BEFORE API call
+                if (mainModal.style.display !== 'none') {
+                    hideModal(mainModal, mainModalContent);
+                }
+                const prompt = `یک برنامه مراقبت جامع و کاربردی برای گیاه "${plantName}" با تکرار "${frequency}" (روزانه/هفتگی/دو هفته یکبار/ماهانه/فصلی) ارائه بده. شامل جزئیات آبدهی، نور، کوددهی، و سایر نیازهای مراقبتی باشد.`;
+                await callGeminiApi(prompt, `برنامه مراقبت برای ${plantName} (${frequency})`);
+                schedulePlantNameInput.value = '';
+                careFrequencySelect.value = 'هفتگی';
+            });
+
+            solvePlantProblemButton.addEventListener('click', async () => {
+                if (loading) return;
+                const plantName = plantNameTroubleshootInput.value.trim();
+                const problem = plantProblemTextarea.value.trim();
+                if (!plantName || !problem) {
+                    showMessageBox('لطفاً نام گیاه و مشکل آن را وارد کنید.', 'warning');
+                    return;
+                }
+                // Hide modal BEFORE API call
+                if (mainModal.style.display !== 'none') {
+                    hideModal(mainModal, mainModalContent);
+                }
+                const prompt = `گیاه "${plantName}" مشکل "${problem}" را دارد. لطفاً علت احتمالی این مشکل را توضیح دهید و راه حل‌های عملی برای درمان و بهبود گیاه ارائه دهید.`;
+                await callGeminiApi(prompt, `عیب یابی ${plantName}: ${problem}`);
+                plantNameTroubleshootInput.value = '';
+                plantProblemTextarea.value = '';
+            });
+
+            clearHistoryButton.addEventListener('click', clearAllHistory);
+
+            // --- Horizontal Tab Bar Logic ---
+            dailyTipTab.addEventListener('click', async () => {
+                if (loading || currentActiveTab === 'dailyTip') return;
+
+                navButtons.forEach(btn => {
+                    btn.closest('.nav-item-wrapper').querySelector('.icon-nav-button').classList.remove('active');
+                });
+                currentActiveSection = null; 
+
+                dailyTipTab.classList.add('active');
+                historyMainTab.classList.remove('active');
+                currentActiveTab = 'dailyTip';
+
+                aiResponseArea.style.display = 'none';
+                if (mainModal.style.display !== 'none') {
+                    hideModal(mainModal, mainModalContent);
+                }
+                
+                const prompt = "یک نکته یا حقیقت جالب روزانه در مورد مراقبت از گیاهان ارائه بده. یک نکته کوتاه و جذاب باشد.";
+                await callGeminiApi(prompt, "نکته روزانه");
+            });
+
+            historyMainTab.addEventListener('click', () => {
+                if (loading || currentActiveTab === 'history') return;
+
+                navButtons.forEach(btn => {
+                    btn.closest('.nav-item-wrapper').querySelector('.icon-nav-button').classList.remove('active');
+                });
+                currentActiveSection = null; 
+
+                historyMainTab.classList.add('active');
+                dailyTipTab.classList.remove('active');
+                currentActiveTab = 'history';
+
+                aiResponseArea.style.display = 'none';
+                if (mainModal.style.display !== 'none') {
+                    hideModal(mainModal, mainModalContent);
+                }
+                if (dailyTipModal.style.display !== 'none') {
+                    hideModal(dailyTipModal, dailyTipModalContent);
+                }
+
+                showModal(mainModal, mainModalContent, modalTitle, 'history', 'تاریخچه گیاهان من');
+                renderHistory(); 
+            });
+
+            function initializeUI() {
+                dailyTipTab.classList.add('active'); 
+                historyMainTab.classList.remove('active');
+                currentActiveTab = 'dailyTip';
+
+                aiResponseArea.style.display = 'none';
+                mainModal.style.display = 'none';
+                dailyTipModal.style.display = 'none'; 
+                
+                const prompt = "یک نکته یا حقیقت جالب روزانه در مورد مراقبت از گیاهان ارائه بده. یک نکته کوتاه و جذاب باشد.";
+                callGeminiApi(prompt, "نکته روزانه");
+
+                renderHistory(); 
+            }
+            initializeUI();
+
+
+            // PWA Service Worker Registration
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./service-worker.js')
+                        .then(registration => {
+                            console.log('SW registered: ', registration);
+                        })
+                        .catch(registrationError => {
+                            console.log('SW registration failed: ', registrationError);
+                        });
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
